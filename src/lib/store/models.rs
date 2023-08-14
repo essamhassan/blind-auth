@@ -19,5 +19,5 @@ pub struct Challenge {
 #[derive(Clone)]
 pub struct Session {
     pub id: String,
-    pub user_id: String
+    pub user_id: String,
 }

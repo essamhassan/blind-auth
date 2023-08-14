@@ -1,7 +1,7 @@
-use log::info;
-use rand::Rng;
-use num_bigint::BigInt;
 use crate::public_params::PublicParams;
+use log::info;
+use num_bigint::BigInt;
+use rand::Rng;
 
 pub mod prover;
 pub mod public_params;

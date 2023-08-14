@@ -1,9 +1,9 @@
-use common_lib::blind_auth_api::blind_auth_server::{BlindAuthServer};
+use common_lib::blind_auth_api::blind_auth_server::BlindAuthServer;
 use common_lib::store::store::DataStore;
 
-use log::info;
-use tonic::{transport::Server};
 use common_lib::verifier::AuthServer;
+use log::info;
+use tonic::transport::Server;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

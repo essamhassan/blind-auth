@@ -1,19 +1,19 @@
-use uuid::Uuid;
-use std::ops::Sub;
-use num_traits::Num;
-use num_bigint::BigInt;
 use log::{debug, info};
+use num_bigint::BigInt;
+use num_traits::Num;
+use std::ops::Sub;
 use tonic::{Request, Response, Status};
+use uuid::Uuid;
 
-use crate::public_params::PublicParams;
-use crate::store::models::{Challenge, User, Session};
 use crate::blind_auth_api::blind_auth_server::BlindAuth;
 use crate::blind_auth_api::{
     AuthAnswerRequest, AuthAnswerResponse, AuthChallengeRequest, AuthChallengeResponse,
     RegisterRequest, RegisterResponse,
 };
-use crate::store::store;
 use crate::generate_randomness;
+use crate::public_params::PublicParams;
+use crate::store::models::{Challenge, Session, User};
+use crate::store::store;
 
 pub struct AuthServer {
     pub store: store::DataStore,
@@ -78,7 +78,7 @@ impl BlindAuth for AuthServer {
         let auth_s = BigInt::from_str_radix(request.get_ref().s.as_str(), 16).unwrap();
 
         let success = verify_challenge(&user, &challenge, auth_s);
-        let session = Session{
+        let session = Session {
             id: generate_id(),
             user_id: user.id,
         };
@@ -118,7 +118,6 @@ fn verify_challenge(user: &User, challenge: &Challenge, s: BigInt) -> bool {
 
     return rhs == challenge.r1 && lhs == challenge.r2;
 }
-
 
 pub fn generate_id() -> String {
     Uuid::new_v4().to_string()
