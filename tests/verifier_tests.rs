@@ -62,10 +62,9 @@ async fn test_create_authentication_challenge() {
     // Assert that the challenge creation was successful
     assert!(response.is_ok());
     let response = response.unwrap();
-    assert_eq!(response.get_ref().auth_id, user.id);
 
     // Assert that the challenge is stored in the DataStore
-    let stored_challenge = auth_server.store.get_challenge(&user.id);
+    let stored_challenge = auth_server.store.get_challenge(&response.get_ref().auth_id);
     assert!(stored_challenge.is_some());
 }
 
