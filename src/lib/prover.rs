@@ -3,9 +3,9 @@ use num_traits::Zero;
 
 use crate::public_params::PublicParams;
 
-// This should read from file, decrypt with user supplied pwd.
+// This is TOO secure. We need to be reading cli or even better encrypted file and user supplied pin.
 pub fn read_secret() -> BigInt {
-    BigInt::from(3)
+    BigInt::from(12345)
 }
 
 // s = k - c * x (mod q)

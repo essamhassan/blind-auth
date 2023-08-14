@@ -41,12 +41,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
 
     info!("Connect to server");
-    let channel = Channel::from_shared(cli.server).unwrap().connect().await?;
+    let channel = Channel::from_shared(cli.server)?.connect().await?;
     let mut client: BlindAuthClient<Channel> = BlindAuthClient::new(channel);
 
     match cli.command {
         Commands::Register { client_id } => {
-            let (y1, y2) = common_lib::gen_params(common_lib::prover::read_secret());
+            let (y1, y2) = common_lib::gen_params(&common_lib::prover::read_secret());
             let req = RegisterRequest {
                 user: client_id,
                 y1: y1,
@@ -60,10 +60,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             let k = common_lib::generate_randomness(&BigInt::from(2), &PublicParams::q().sub(2));
             info!("Generate K = {}", k);
-            let (r1, r2) = common_lib::gen_params(k.to_owned());
+            let (r1, r2) = common_lib::gen_params(&k);
 
             let req = AuthChallengeRequest {
-                user: client_id.to_owned(),
+                user: client_id.clone(),
                 r1: r1,
                 r2: r2,
             };
@@ -72,13 +72,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             info!("Received AuthChallengeResponse: {:?}", response.get_ref());
 
             let x = common_lib::prover::read_secret();
-            let c = BigInt::from_str_radix(response.get_ref().c.as_str(), 16).unwrap();
+            let c = BigInt::from_str_radix(response.get_ref().c.as_str(), 16)?;
             let s = common_lib::prover::compute_auth_secret(c, k, x);
 
 
 
             let req = AuthAnswerRequest {
-                auth_id: client_id.to_owned(),
+                auth_id: response.into_inner().auth_id,
                 s: s.to_str_radix(16),
             };
             info!("Sending AuthAnswerRequest: {:?}", req);

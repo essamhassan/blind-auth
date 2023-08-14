@@ -1,7 +1,7 @@
-use crate::public_params::PublicParams;
 use log::info;
-use num_bigint::BigInt;
 use rand::Rng;
+use num_bigint::BigInt;
+use crate::public_params::PublicParams;
 
 pub mod prover;
 pub mod public_params;
@@ -23,9 +23,9 @@ pub fn generate_randomness(min: &BigInt, max: &BigInt) -> BigInt {
     min + random_bigint % &range
 }
 
-pub fn gen_params(exponent: BigInt) -> (String, String) {
-    let p1 = PublicParams::g().modpow(&exponent, &PublicParams::p());
-    let p2 = PublicParams::h().modpow(&exponent, &PublicParams::p());
+pub fn gen_params(exponent: &BigInt) -> (String, String) {
+    let p1 = PublicParams::g().modpow(exponent, &PublicParams::p());
+    let p2 = PublicParams::h().modpow(exponent, &PublicParams::p());
 
     info!("generating p1 = {}, p2 = {}", p1, p2);
 
