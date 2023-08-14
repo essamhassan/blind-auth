@@ -1,0 +1,33 @@
+syntax = "proto3";
+package blind_auth;
+
+message RegisterRequest {
+    string user = 1;
+    string y1 = 2;
+    string y2 = 3;
+}
+message RegisterResponse {
+  bool success = 1;
+}
+
+message AuthChallengeRequest {
+    string user = 1;
+    string r1 = 2;
+    string r2 = 3;
+}
+message AuthChallengeResponse {
+    string auth_id = 1;
+    string c = 2;
+}
+message AuthAnswerRequest {
+    string auth_id = 1;
+    string s = 2;
+}
+message AuthAnswerResponse {
+    string session_id = 1;
+}
+service BlindAuth {
+    rpc Register(RegisterRequest) returns (RegisterResponse) {}
+    rpc CreateAuthenticationChallenge(AuthChallengeRequest) returns (AuthChallengeResponse) {}
+    rpc VerifyAuthentication(AuthAnswerRequest) returns (AuthAnswerResponse) {}
+}
