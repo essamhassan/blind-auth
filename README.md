@@ -1,7 +1,7 @@
 [![build](https://github.com/essamhassan/blind-auth/actions/workflows/build.yml/badge.svg)](https://github.com/essamhassan/blind-auth/actions/workflows/build.yml)
 [![test](https://github.com/essamhassan/blind-auth/actions/workflows/test.yml/badge.svg)](https://github.com/essamhassan/blind-auth/actions/workflows/test.yml)
 # Blind Auth
-Chaum-Pederson Passwordless Authenticati
+Chaum-Pederson Passwordless Authentication
 
 # Code structure
 
@@ -53,5 +53,11 @@ docker exec -it -e RUST_LOG=debug prover ./prover http://verifier:50051 register
 docker exec -it -e RUST_LOG=debug prover ./prover http://verifier:50051 register --client-id="clienttest"
 ```
 
+# Test
+```
+cargo test
+```
 # Pending work
-- Looks like there is an opportunity to improve performance of BigInt expontiation.
+- Room for optimization and performance improvement.
+- Verifier code need to be more modularized, validation should be decoupled from core logic.
+- e2e tests to cover 1) failure use cases 2) malicious users 
