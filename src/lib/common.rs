@@ -8,11 +8,13 @@ pub mod public_params;
 pub mod store;
 pub mod verifier;
 
-// defining grpc package for proto
+// bundles grpc package for proto
 pub mod blind_auth_api {
     tonic::include_proto!("blind_auth");
 }
 
+
+// Generates a random BigInt between min and max
 pub fn generate_randomness(min: &BigInt, max: &BigInt) -> BigInt {
     let mut rng = rand::thread_rng();
     let range: BigInt = max - min;
@@ -23,6 +25,8 @@ pub fn generate_randomness(min: &BigInt, max: &BigInt) -> BigInt {
     min + random_bigint % &range
 }
 
+
+// Generates a param pair p1, p2 where p1=(g^exponent)%p, p2=(h^exponent)%p
 pub fn gen_params(exponent: &BigInt) -> (String, String) {
     let p1 = PublicParams::g().modpow(exponent, &PublicParams::p());
     let p2 = PublicParams::h().modpow(exponent, &PublicParams::p());

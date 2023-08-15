@@ -92,6 +92,8 @@ impl BlindAuth for AuthServer {
     }
 }
 
+// Verifiers challenge response following the predicate:
+// r1 == g^s * y1*c (mod p) && r2 == h^s * y2^c (mod p)
 fn verify_challenge(user: &User, challenge: &Challenge, s: BigInt) -> bool {
     debug!(
         "y1 {}, g {}, y2 {}, h {}, c {}, s {}",

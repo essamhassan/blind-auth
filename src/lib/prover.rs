@@ -8,7 +8,7 @@ pub fn read_secret() -> BigInt {
     BigInt::from(12345)
 }
 
-// s = k - c * x (mod q)
+// Computes auth_secret = k - c * x (mod q)
 pub fn compute_auth_secret(c: BigInt, k: BigInt, x: BigInt) -> BigInt {
     let mut auth_secret = (k - (c * x)) % PublicParams::q();
     if auth_secret < BigInt::zero() {
