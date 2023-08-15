@@ -1,0 +1,18 @@
+version: '3.7'
+
+services:
+  verifier:
+    build:
+      context: .
+      dockerfile: ./build/verifier/Dockerfile
+    ports:
+      - 50051:50051
+    container_name: verifier
+
+  prover:
+    build:
+      context: .
+      dockerfile: ./build/prover/Dockerfile
+    depends_on:
+      - verifier
+    container_name: prover
