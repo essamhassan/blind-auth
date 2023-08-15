@@ -52,3 +52,6 @@ docker exec -it -e RUST_LOG=debug prover ./prover http://verifier:50051 register
 ```bash
 docker exec -it -e RUST_LOG=debug prover ./prover http://verifier:50051 register --client-id="clienttest"
 ```
+
+# Pending work
+- Looks like there is an opportunity to improve performance of BigInt expontiation.

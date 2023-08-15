@@ -27,10 +27,32 @@ impl BlindAuth for AuthServer {
     ) -> Result<Response<RegisterResponse>, Status> {
         info!("register request: {:?}", request.get_ref());
 
+        if request.get_ref().user.is_empty() {
+            return Err(Status::invalid_argument("user field is not set"));
+        }
+
+        let y1 = match BigInt::from_str_radix(request.get_ref().y1.as_str(), 16) {
+            Ok(y) => y,
+            Err(_) => {
+                return Err(Status::invalid_argument(
+                    "y1 field is not base16 number string",
+                ))
+            }
+        };
+
+        let y2 = match BigInt::from_str_radix(request.get_ref().y2.as_str(), 16) {
+            Ok(r) => r,
+            Err(_) => {
+                return Err(Status::invalid_argument(
+                    "y2 field is not base16 number string",
+                ))
+            }
+        };
+
         self.store.insert_user(User {
             id: request.get_ref().user.to_string(),
-            y1: BigInt::from_str_radix(request.get_ref().y1.as_str(), 16).unwrap(),
-            y2: BigInt::from_str_radix(request.get_ref().y2.as_str(), 16).unwrap(),
+            y1: y1,
+            y2: y2,
         });
 
         Ok(Response::new(RegisterResponse { success: true }))
@@ -45,13 +67,35 @@ impl BlindAuth for AuthServer {
             request.get_ref()
         );
 
+        if request.get_ref().user.is_empty() {
+            return Err(Status::invalid_argument("user field is not set"));
+        }
+
+        let r1 = match BigInt::from_str_radix(request.get_ref().r1.as_str(), 16) {
+            Ok(r) => r,
+            Err(_) => {
+                return Err(Status::invalid_argument(
+                    "r1 field is not base16 number string",
+                ))
+            }
+        };
+
+        let r2 = match BigInt::from_str_radix(request.get_ref().r2.as_str(), 16) {
+            Ok(r) => r,
+            Err(_) => {
+                return Err(Status::invalid_argument(
+                    "r2 field is not base16 number string",
+                ))
+            }
+        };
+
         if let Some(user) = self.store.get_user(&request.get_ref().user) {
             let c = generate_randomness(&BigInt::from(2), &PublicParams::q().sub(2));
             let challenge = Challenge {
                 c: c.clone(),
                 user_id: user.id,
-                r1: BigInt::from_str_radix(request.get_ref().r1.as_str(), 16).unwrap(),
-                r2: BigInt::from_str_radix(request.get_ref().r2.as_str(), 16).unwrap(),
+                r1: r1,
+                r2: r2,
                 id: generate_id(),
             };
             self.store.insert_challenge(challenge.clone());
@@ -70,12 +114,29 @@ impl BlindAuth for AuthServer {
         request: Request<AuthAnswerRequest>,
     ) -> Result<Response<AuthAnswerResponse>, Status> {
         info!("verify_authentication req: {:?}", request.get_ref());
-        let challenge = self
-            .store
-            .get_challenge(&request.get_ref().auth_id)
-            .unwrap();
-        let user = self.store.get_user(&challenge.user_id).unwrap();
-        let auth_s = BigInt::from_str_radix(request.get_ref().s.as_str(), 16).unwrap();
+
+        if request.get_ref().auth_id.is_empty() {
+            return Err(Status::invalid_argument("auth_id field is not set"));
+        }
+
+        let challenge = match self.store.get_challenge(&request.get_ref().auth_id) {
+            Some(challenge) => challenge,
+            None => return Err(Status::not_found("challenge not found")),
+        };
+
+        let user = match self.store.get_user(&challenge.user_id) {
+            Some(user) => user,
+            None => {
+                return Err(Status::failed_precondition(
+                    "failed to fetch user for supplied challenge",
+                ))
+            }
+        };
+
+        let auth_s = match BigInt::from_str_radix(request.get_ref().s.as_str(), 16) {
+            Ok(s) => s,
+            Err(err) => return Err(Status::invalid_argument(err.to_string())),
+        };
 
         let success = verify_challenge(&user, &challenge, auth_s);
         let session = Session {

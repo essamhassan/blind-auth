@@ -151,3 +151,172 @@ async fn test_verify_authentication_failed() {
         tonic::Code::PermissionDenied
     );
 }
+
+#[tokio::test]
+async fn test_empty_user_register() {
+    let store = DataStore::new();
+    let auth_server = AuthServer { store };
+
+    let request = RegisterRequest {
+        user: "".to_string(),
+        y1: "1".to_string(),
+        y2: "2".to_string(),
+    };
+
+    let result = auth_server.register(Request::new(request)).await;
+
+    assert_eq!(result.unwrap_err().code(), tonic::Code::InvalidArgument);
+}
+
+#[tokio::test]
+async fn test_invalid_y1_register() {
+    let store = DataStore::new();
+    let auth_server = AuthServer { store };
+
+    let request = RegisterRequest {
+        user: "test_user".to_string(),
+        y1: "invalid_y1".to_string(),
+        y2: "2".to_string(),
+    };
+
+    let result = auth_server.register(Request::new(request)).await;
+
+    assert_eq!(result.unwrap_err().code(), tonic::Code::InvalidArgument);
+}
+
+#[tokio::test]
+async fn test_invalid_y2_register() {
+    let store = DataStore::new();
+    let auth_server = AuthServer { store };
+
+    let request = RegisterRequest {
+        user: "test_user".to_string(),
+        y1: "1".to_string(),
+        y2: "invalid_y2".to_string(),
+    };
+
+    let result = auth_server.register(Request::new(request)).await;
+
+    assert_eq!(result.unwrap_err().code(), tonic::Code::InvalidArgument);
+}
+
+#[tokio::test]
+async fn test_empty_user_auth_challenge() {
+    let store = DataStore::new();
+    let auth_server = AuthServer { store };
+
+    let request = AuthChallengeRequest {
+        user: "".to_string(),
+        r1: "1".to_string(),
+        r2: "2".to_string(),
+    };
+
+    let result = auth_server
+        .create_authentication_challenge(Request::new(request))
+        .await;
+
+    assert_eq!(result.unwrap_err().code(), tonic::Code::InvalidArgument);
+}
+
+#[tokio::test]
+async fn test_invalid_r1_auth_challenge() {
+    let store = DataStore::new();
+    let auth_server = AuthServer { store };
+
+    let request = AuthChallengeRequest {
+        user: "test_user".to_string(),
+        r1: "invalid_r1".to_string(),
+        r2: "2".to_string(),
+    };
+
+    let result = auth_server
+        .create_authentication_challenge(Request::new(request))
+        .await;
+
+    assert_eq!(result.unwrap_err().code(), tonic::Code::InvalidArgument);
+}
+
+#[tokio::test]
+async fn test_invalid_r2_auth_challenge() {
+    let store = DataStore::new();
+    let auth_server = AuthServer { store };
+
+    let request = AuthChallengeRequest {
+        user: "test_user".to_string(),
+        r1: "1".to_string(),
+        r2: "invalid_r2".to_string(),
+    };
+
+    let result = auth_server
+        .create_authentication_challenge(Request::new(request))
+        .await;
+
+    assert_eq!(result.unwrap_err().code(), tonic::Code::InvalidArgument);
+}
+
+#[tokio::test]
+async fn test_empty_auth_id_verify_auth() {
+    let store = DataStore::new();
+    let auth_server = AuthServer { store };
+
+    let request = AuthAnswerRequest {
+        auth_id: "".to_string(),
+        s: "1".to_string(),
+    };
+
+    let result = auth_server
+        .verify_authentication(Request::new(request))
+        .await;
+
+    assert_eq!(result.unwrap_err().code(), tonic::Code::InvalidArgument);
+}
+
+#[tokio::test]
+async fn test_invalid_s_verify_auth() {
+    let store = DataStore::new();
+    let auth_server = AuthServer { store };
+
+    // Insert a user and challenge into the DataStore
+    let user = User {
+        id: String::from("dummy"),
+        y1: BigInt::from(1),
+        y2: BigInt::from(3),
+    };
+    auth_server.store.insert_user(user.clone());
+    let challenge = Challenge {
+        user_id: String::from("dummy"),
+        c: BigInt::from(1),
+        r2: BigInt::from(3),
+        r1: BigInt::from(4),
+        id: String::from("challengeid"),
+    };
+    auth_server.store.insert_challenge(challenge.clone());
+
+    let request = AuthAnswerRequest {
+        auth_id: "challengeid".to_string(),
+        s: "invalid_s".to_string(),
+    };
+
+    let result = auth_server
+        .verify_authentication(Request::new(request))
+        .await;
+
+    assert_eq!(result.unwrap_err().code(), tonic::Code::InvalidArgument);
+}
+
+#[tokio::test]
+async fn test_invalid_challenge_id() {
+    let store = DataStore::new();
+    let auth_server = AuthServer { store };
+
+    let request = AuthAnswerRequest {
+        auth_id: "invalid_challenge_id".to_string(),
+        s: "not_important_s".to_string(),
+    };
+
+    let result = auth_server
+        .verify_authentication(Request::new(request))
+        .await;
+
+    assert_eq!(result.unwrap_err().code(), tonic::Code::NotFound);
+}
